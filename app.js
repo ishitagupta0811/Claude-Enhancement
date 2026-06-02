@@ -1870,7 +1870,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const originalText = looksGoodBtn.innerHTML;
       looksGoodBtn.innerHTML = `
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent-green)" stroke-width="2.5" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg>
-        Looks good!
+        Looks good Heyyeyeyeyeyeye!
       `;
       looksGoodBtn.style.color = 'var(--accent-green)';
       looksGoodBtn.style.borderColor = 'var(--accent-green)';
