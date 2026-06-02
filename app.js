@@ -461,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!allSkipped) {
         // Complete Deep Lane Questions!
         const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-        const selectionSummary = `Regenerate strategy clarifying assumptions: ${dynamicAnswersStr}`;
+        const selectionSummary = `Regenerate the above answer clarifying assumptions: ${dynamicAnswersStr}`;
 
         // Send message programmatically
         chatTextArea.value = selectionSummary;
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
           chatTextArea.placeholder = 'Write a message...';
 
           const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-          const selectionSummary = `Regenerate strategy clarifying assumptions: ${dynamicAnswersStr}`;
+          const selectionSummary = `Regenerate the above answer clarifying assumptions: ${dynamicAnswersStr}`;
 
           // Hide strategy card
           strategyCard.style.display = 'none';
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainWorkspace.classList.remove('case-wizard-active');
         chatTextArea.placeholder = 'Write a message...';
         const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-        const selectionSummary = `Regenerate strategy clarifying assumptions: ${dynamicAnswersStr}`;
+        const selectionSummary = `Regenerate the above answer assumptions: ${dynamicAnswersStr}`;
         strategyCard.style.display = 'none';
 
         const messageContainer = strategyCard.closest('.claude-message');
@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainWorkspace.classList.remove('case-wizard-active');
         chatTextArea.placeholder = 'Write a message...';
         const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-        const selectionSummary = `Regenerate strategy clarifying assumptions: ${dynamicAnswersStr}`;
+        const selectionSummary = `Regenerate the above answer with assumptions: ${dynamicAnswersStr}`;
         strategyCard.style.display = 'none';
 
         const messageContainer = strategyCard.closest('.claude-message');
@@ -1850,8 +1850,8 @@ document.addEventListener('DOMContentLoaded', () => {
       rethinkBtn.style.borderColor = 'var(--accent-green)';
 
       setTimeout(() => {
-        const offChipsStr = offChips.length > 0 ? ` (excluding incorrect assumption(s): ${offChips.join(', ')})` : '';
-        chatTextArea.value = `Regenerate strategy${offChipsStr}.`;
+        const offChipsStr = offChips.length > 0 ? ` (including the following incorrect assumption(s): ${offChips.join(', ')})` : '';
+        chatTextArea.value = `Regenerate the above answer${offChipsStr}.`;
         handleSendMessage();
 
         rethinkBtn.innerHTML = `
