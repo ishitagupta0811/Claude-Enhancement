@@ -1454,7 +1454,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const backendUrl = window.location.port === '3001' ? '/api/chat' : 'http://localhost:3001/api/chat';
+      const backendUrl = '/api/chat';
       const response = await fetch(backendUrl, {
         method: "POST",
         headers: {
