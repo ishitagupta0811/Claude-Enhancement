@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "npm start --prefix server",
+    "dev": "npm run dev --prefix server"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}
