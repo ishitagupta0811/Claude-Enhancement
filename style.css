@@ -95,6 +95,15 @@ body {
   padding: 16px 16px;
 }
 
+.sidebar-top-group {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 /* Sidebar Top Collapse Toggle */
 .sidebar-toggle-container {
   width: 100%;
@@ -260,7 +269,7 @@ body {
   display: none;
   flex: 1;
   width: 100%;
-  overflow-y: auto;
+  overflow-y: visible;
   margin-top: 16px;
   padding: 0 8px;
 }

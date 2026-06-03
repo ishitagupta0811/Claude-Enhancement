@@ -1859,7 +1859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (rethinkBtn) {
       const messageContainer = rethinkBtn.closest('.claude-message');
-      const offChips = Array.from(messageContainer.querySelectorAll('.strategy-fastlane-view .strategy-chip.off')).map(c => c.getAttribute('data-assumption'));
+      const activeChips = Array.from(messageContainer.querySelectorAll('.strategy-fastlane-view .strategy-chip:not(.off)')).map(c => c.getAttribute('data-assumption'));
 
       rethinkBtn.innerHTML = `
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent-green)" stroke-width="2.5" class="rethink-icon" style="animation: rotate 1s linear infinite; margin-right: 6px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
@@ -1869,8 +1869,8 @@ document.addEventListener('DOMContentLoaded', () => {
       rethinkBtn.style.borderColor = 'var(--accent-green)';
 
       setTimeout(() => {
-        const offChipsStr = offChips.length > 0 ? `with the following assumption(s): ${offChips.join(', ')})` : '';
-        chatTextArea.value = `Regenerate the above answer${offChipsStr}.`;
+        const activeChipsStr = activeChips.length > 0 ? ` with the following assumption(s): ${activeChips.join(', ')}` : '';
+        chatTextArea.value = `Regenerate the above answer${activeChipsStr}.`;
         handleSendMessage();
 
         rethinkBtn.innerHTML = `
