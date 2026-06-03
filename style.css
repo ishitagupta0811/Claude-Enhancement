@@ -2323,3 +2323,51 @@ body {
   border-color: var(--text-primary) !important;
   transform: scale(1.05);
 }
+
+/* Custom Deep Lane Input & Next Button */
+.popup-next-btn {
+  border: 1px solid var(--accent-coral);
+  background-color: rgba(224, 92, 67, 0.1);
+  color: var(--accent-coral);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transition: var(--transition-smooth);
+  margin-right: 8px;
+  font-family: inherit;
+}
+
+.popup-next-btn.active {
+  opacity: 1;
+  cursor: pointer;
+  background-color: var(--accent-coral);
+  color: #fff;
+}
+
+.popup-next-btn.active:hover {
+  background-color: #ff6f54;
+  border-color: #ff6f54;
+  box-shadow: 0 0 10px rgba(224, 92, 67, 0.3);
+}
+
+.deeplane-custom-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 4px 0;
+  outline: none;
+  margin-right: 12px;
+  transition: var(--transition-smooth);
+}
+
+.deeplane-custom-input:focus {
+  border-bottom-color: var(--accent-coral);
+}
+

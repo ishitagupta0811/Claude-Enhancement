@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const deepLaneQuestions = {
     1: {
       title: 'Where are you in the journey right now?',
-      progress: '< 1 of 2 >',
+      progress: '1 of 2',
       options: [
         { label: 'Just an idea so far', value: 'Just an idea so far' },
         { label: 'Building the MVP', value: 'Building the MVP' },
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     2: {
       title: 'What is your primary focus for optimizing the support queue?',
-      progress: '< 2 of 2 >',
+      progress: '2 of 2',
       options: [
         { label: 'Reducing initial response times', value: 'Reducing initial response times' },
         { label: 'Deflecting tickets with automated AI', value: 'Deflecting tickets with automated AI' },
@@ -402,14 +402,39 @@ document.addEventListener('DOMContentLoaded', () => {
       </svg>
     `;
 
-    const labelSpan = document.createElement('span');
-    labelSpan.className = 'option-text';
-    labelSpan.style.color = 'var(--text-secondary)';
-    labelSpan.style.cursor = 'pointer';
-    labelSpan.textContent = 'Something else';
-    labelSpan.addEventListener('click', () => {
-      answers[index] = 'Custom input';
-      advanceDeepLane(strategyCard, index, answers, questionsList);
+    const customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.placeholder = 'Something else...';
+    customInput.className = 'deeplane-custom-input';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'popup-next-btn';
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = true;
+
+    customInput.addEventListener('input', () => {
+      if (customInput.value.trim().length > 0) {
+        nextBtn.classList.add('active');
+        nextBtn.disabled = false;
+      } else {
+        nextBtn.classList.remove('active');
+        nextBtn.disabled = true;
+      }
+    });
+
+    const triggerNext = () => {
+      const val = customInput.value.trim();
+      if (val) {
+        answers[index] = val;
+        advanceDeepLane(strategyCard, index, answers, questionsList);
+      }
+    };
+
+    nextBtn.addEventListener('click', triggerNext);
+    customInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        triggerNext();
+      }
     });
 
     const skipBtn = document.createElement('button');
@@ -421,7 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     customRow.appendChild(iconSpan);
-    customRow.appendChild(labelSpan);
+    customRow.appendChild(customInput);
+    customRow.appendChild(nextBtn);
     customRow.appendChild(skipBtn);
     optionList.appendChild(customRow);
 
@@ -437,36 +463,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function finalizeDeepLane(strategyCard, answers, questionsList, isBottomPopup = false) {
+    // Hide UI elements
+    if (isBottomPopup) {
+      mainWorkspace.classList.remove('case-wizard-active');
+      chatTextArea.placeholder = 'Write a message...';
+    } else {
+      const deeplaneView = strategyCard.querySelector('.strategy-deeplane-view');
+      if (deeplaneView) deeplaneView.style.display = 'none';
+    }
+    strategyCard.style.display = 'none';
+
+    // Reset button border
+    const messageContainer = strategyCard.closest('.claude-message');
+    const checkThisBtn = messageContainer.querySelector('.check-this-btn');
+    if (checkThisBtn) {
+      checkThisBtn.style.color = '';
+      checkThisBtn.style.borderColor = '';
+    }
+
+    // Filter out skipped answers
+    const validAnswers = [];
+    questionsList.forEach((q, idx) => {
+      const ans = answers[idx + 1];
+      if (ans && ans !== 'Skipped') {
+        validAnswers.push(`(${q.title}: ${ans})`);
+      }
+    });
+
+    if (validAnswers.length > 0) {
+      const dynamicAnswersStr = validAnswers.join(', ');
+      const selectionSummary = `Regenerate the above answer by taking the user's input with clarifying assumptions: ${dynamicAnswersStr}`;
+
+      // Programmatically send the message
+      chatTextArea.value = selectionSummary;
+      handleSendMessage();
+    }
+  }
+
   function advanceDeepLane(strategyCard, currentIndex, answers, questionsList) {
     if (currentIndex < questionsList.length) {
       renderDeepLaneQuestion(strategyCard, currentIndex + 1, answers);
       scrollToBottom();
     } else {
-      // Hide strategy card and deeplane view
-      const deeplaneView = strategyCard.querySelector('.strategy-deeplane-view');
-      if (deeplaneView) deeplaneView.style.display = 'none';
-      strategyCard.style.display = 'none';
-
-      // Reset button border
-      const messageContainer = strategyCard.closest('.claude-message');
-      const checkThisBtn = messageContainer.querySelector('.check-this-btn');
-      if (checkThisBtn) {
-        checkThisBtn.style.color = '';
-        checkThisBtn.style.borderColor = '';
-      }
-
-      // Check if all questions were skipped
-      const allSkipped = questionsList.every((q, idx) => answers[idx + 1] === 'Skipped');
-
-      if (!allSkipped) {
-        // Complete Deep Lane Questions!
-        const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-        const selectionSummary = `Regenerate the above answer clarifying assumptions: ${dynamicAnswersStr}`;
-
-        // Send message programmatically
-        chatTextArea.value = selectionSummary;
-        handleSendMessage();
-      }
+      finalizeDeepLane(strategyCard, answers, questionsList, false);
     }
   }
 
@@ -499,26 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index < questionsList.length) {
           triggerBottomDeepLanePopup(strategyCard, questionsList, index + 1, answers);
         } else {
-          // Complete Deep Lane Questions!
-          mainWorkspace.classList.remove('case-wizard-active');
-          chatTextArea.placeholder = 'Write a message...';
-
-          const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-          const selectionSummary = `Regenerate the above answer clarifying assumptions: ${dynamicAnswersStr}`;
-
-          // Hide strategy card
-          strategyCard.style.display = 'none';
-
-          const messageContainer = strategyCard.closest('.claude-message');
-          const checkThisBtn = messageContainer.querySelector('.check-this-btn');
-          if (checkThisBtn) {
-            checkThisBtn.style.color = '';
-            checkThisBtn.style.borderColor = '';
-          }
-
-          // Programmatically submit the answers!
-          chatTextArea.value = selectionSummary;
-          handleSendMessage();
+          finalizeDeepLane(strategyCard, answers, questionsList, true);
         }
       });
       popupOptionList.appendChild(btn);
@@ -542,31 +563,42 @@ document.addEventListener('DOMContentLoaded', () => {
     </svg>
   `;
 
-    const labelSpan = document.createElement('span');
-    labelSpan.className = 'option-text';
-    labelSpan.style.color = 'var(--text-secondary)';
-    labelSpan.style.cursor = 'pointer';
-    labelSpan.textContent = 'Something else';
-    labelSpan.addEventListener('click', () => {
-      answers[index] = 'Custom input';
-      if (index < questionsList.length) {
-        triggerBottomDeepLanePopup(strategyCard, questionsList, index + 1, answers);
+    const customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.placeholder = 'Something else...';
+    customInput.className = 'deeplane-custom-input';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'popup-next-btn';
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = true;
+
+    customInput.addEventListener('input', () => {
+      if (customInput.value.trim().length > 0) {
+        nextBtn.classList.add('active');
+        nextBtn.disabled = false;
       } else {
-        mainWorkspace.classList.remove('case-wizard-active');
-        chatTextArea.placeholder = 'Write a message...';
-        const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-        const selectionSummary = `Regenerate the above answer assumptions: ${dynamicAnswersStr}`;
-        strategyCard.style.display = 'none';
+        nextBtn.classList.remove('active');
+        nextBtn.disabled = true;
+      }
+    });
 
-        const messageContainer = strategyCard.closest('.claude-message');
-        const checkThisBtn = messageContainer.querySelector('.check-this-btn');
-        if (checkThisBtn) {
-          checkThisBtn.style.color = '';
-          checkThisBtn.style.borderColor = '';
+    const triggerNext = () => {
+      const val = customInput.value.trim();
+      if (val) {
+        answers[index] = val;
+        if (index < questionsList.length) {
+          triggerBottomDeepLanePopup(strategyCard, questionsList, index + 1, answers);
+        } else {
+          finalizeDeepLane(strategyCard, answers, questionsList, true);
         }
+      }
+    };
 
-        chatTextArea.value = selectionSummary;
-        handleSendMessage();
+    nextBtn.addEventListener('click', triggerNext);
+    customInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        triggerNext();
       }
     });
 
@@ -578,26 +610,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (index < questionsList.length) {
         triggerBottomDeepLanePopup(strategyCard, questionsList, index + 1, answers);
       } else {
-        mainWorkspace.classList.remove('case-wizard-active');
-        chatTextArea.placeholder = 'Write a message...';
-        const dynamicAnswersStr = questionsList.map((q, idx) => `(${q.title}: ${answers[idx + 1] || 'Skipped'})`).join(', ');
-        const selectionSummary = `Regenerate the above answer with assumptions: ${dynamicAnswersStr}`;
-        strategyCard.style.display = 'none';
-
-        const messageContainer = strategyCard.closest('.claude-message');
-        const checkThisBtn = messageContainer.querySelector('.check-this-btn');
-        if (checkThisBtn) {
-          checkThisBtn.style.color = '';
-          checkThisBtn.style.borderColor = '';
-        }
-
-        chatTextArea.value = selectionSummary;
-        handleSendMessage();
+        finalizeDeepLane(strategyCard, answers, questionsList, true);
       }
     });
 
     customRow.appendChild(iconSpan);
-    customRow.appendChild(labelSpan);
+    customRow.appendChild(customInput);
+    customRow.appendChild(nextBtn);
     customRow.appendChild(skipBtn);
     popupOptionList.appendChild(customRow);
   }
@@ -605,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const popupQuestions = {
     1: {
       title: 'What type of case do you want to work through?',
-      progress: '< 1 of 2 >',
+      progress: '1 of 2',
       options: [
         { label: 'Product design ("design/improve X")', value: 'Product Design' },
         { label: 'Metrics/analytical ("diagnose this drop")', value: 'Metrics/Analytical' },
@@ -616,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     2: {
       title: 'What sector or company archetype do you want to target?',
-      progress: '< 2 of 2 >',
+      progress: '2 of 2',
       options: [
         { label: 'Consumer Tech (e.g., Airbnb, Uber, TikTok)', value: 'Consumer Tech' },
         { label: 'B2B / SaaS (e.g., Stripe, Salesforce, Slack)', value: 'B2B SaaS' },
@@ -1850,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', () => {
       rethinkBtn.style.borderColor = 'var(--accent-green)';
 
       setTimeout(() => {
-        const offChipsStr = offChips.length > 0 ? ` (including the following incorrect assumption(s): ${offChips.join(', ')})` : '';
+        const offChipsStr = offChips.length > 0 ? `with the following assumption(s): ${offChips.join(', ')})` : '';
         chatTextArea.value = `Regenerate the above answer${offChipsStr}.`;
         handleSendMessage();
 
@@ -1870,7 +1889,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const originalText = looksGoodBtn.innerHTML;
       looksGoodBtn.innerHTML = `
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent-green)" stroke-width="2.5" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg>
-        Looks good Heyyeyeyeyeyeye!
+        Looks good!
       `;
       looksGoodBtn.style.color = 'var(--accent-green)';
       looksGoodBtn.style.borderColor = 'var(--accent-green)';
